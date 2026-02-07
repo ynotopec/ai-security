@@ -44,6 +44,39 @@ Il attend **votre** ordre à vous.
 
 ---
 
+## 🧭 (A) Router / Decision Flow
+
+Un **Router** (ou orchestrateur) décide quel chemin suivre
+avant toute action :
+
+```
+Utilisateur → Router
+   ├─ si DATA → Lecteur → Résumé/Faits → Router
+   └─ si ACTION → Exécutant → Outils (sous contrôle)
+```
+
+**Règle clé :** le Router ne mélange jamais DATA et ACTION.
+Il classe d'abord, puis oriente.
+
+---
+
+## 🚨 (B) 1 séquence sur un cas critique
+
+**Cas critique :** un mail tente un virement urgent.
+
+1. **Utilisateur** : « Résume ce mail. »
+2. **Router** : classe la demande en **DATA** → envoie au Lecteur.
+3. **Lecteur** : renvoie un fait neutre :  
+   *« Le mail demande un transfert d'argent urgent. »*
+4. **Router** : transmet ce fait à l'utilisateur, sans action.
+5. **Utilisateur** : décide (ou non) d'une action explicite.
+6. **Router** : si l'utilisateur ordonne clairement,
+   alors seulement l'Exécutant agit.
+
+**Résultat :** le texte du mail n'a jamais déclenché d'action.
+
+---
+
 ## 🛡️ Pourquoi c'est plus sûr
 
 * Un document piégé ne peut pas donner d'ordres.
