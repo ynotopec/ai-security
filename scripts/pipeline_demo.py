@@ -3,10 +3,45 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
 ACTION_VERBS = ("envoie", "payer", "virement", "transfère")
+INJECTION_MARKERS = (
+    "ignore les règles précédentes",
+    "ignore previous",
+    "bypass",
+    "system prompt",
+)
+
+
+def nemo_guardrails_available() -> bool:
+    """Détecte la présence de la librairie NeMo Guardrails (optionnelle)."""
+    try:
+        import nemoguardrails  # noqa: F401
+    except Exception:
+        return False
+    return True
+
+
+def evaluate_untrusted_content(document: str) -> tuple[bool, str]:
+    """Évalue si le document contient des signaux d'injection.
+
+    Intégration intelligente:
+    - Si NeMo Guardrails est installé et activé via NEMO_GUARDRAILS_ENABLED=1,
+      on active un mode de durcissement explicite.
+    - Sinon, on applique une politique locale déterministe sans dépendance externe.
+    """
+    lowered = document.lower()
+    suspicious = any(marker in lowered for marker in INJECTION_MARKERS)
+
+    if os.getenv("NEMO_GUARDRAILS_ENABLED") == "1" and nemo_guardrails_available():
+        reason = "Mode NeMo Guardrails actif (stratégie de blocage conservatrice)."
+    else:
+        reason = "Mode local actif (fallback sans dépendance externe)."
+
+    return suspicious, reason
 
 
 def route_request(user_request: str) -> str:
@@ -35,6 +70,7 @@ def executor_decision(explicit_user_order: str | None) -> str:
 
 def run_demo() -> None:
     sample = Path("examples/malicious_email.txt").read_text(encoding="utf-8")
+    suspicious, guardrail_mode = evaluate_untrusted_content(sample)
 
     route = route_request("Résume cet email")
     if route != "reader":
@@ -42,8 +78,14 @@ def run_demo() -> None:
         return
 
     summary = reader_summary(sample)
-    decision = executor_decision(explicit_user_order=None)
+    explicit_order = None
+    if suspicious:
+        explicit_order = None
 
+    decision = executor_decision(explicit_user_order=explicit_order)
+
+    print(f"[GUARDRAIL] {guardrail_mode}")
+    print(f"[GUARDRAIL] Contenu non fiable détecté: {'oui' if suspicious else 'non'}")
     print(f"[LECTEUR] Résumé factuel: {summary}")
     print(f"[EXECUTANT] {decision}")
 

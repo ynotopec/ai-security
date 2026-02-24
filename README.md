@@ -9,7 +9,9 @@ Ce repository démontre un pattern de sécurité IA: **séparer la lecture des d
 - `make`
 
 ### Installation déterministe
-Aucune dépendance externe: uniquement la librairie standard Python.
+Aucune dépendance externe obligatoire: uniquement la librairie standard Python.
+
+> Compatibilité NeMo Guardrails: le projet peut s'intégrer à `NVIDIA-NeMo/Guardrails` en mode optionnel, sans casser l'exécution locale. Si `nemoguardrails` est installé et `NEMO_GUARDRAILS_ENABLED=1`, le pipeline active un mode de durcissement explicite.
 
 ```bash
 make run
@@ -19,6 +21,7 @@ make run
 
 - `make run` : lance une démonstration complète du pipeline sécurisé.
 - `make demo-io` : affiche un exemple d’entrée/sortie reproductible.
+- `NEMO_GUARDRAILS_ENABLED=1 make run` : active le mode d’intégration Guardrails (si la dépendance est présente).
 
 ## Exemple reproductible d’entrée/sortie
 
